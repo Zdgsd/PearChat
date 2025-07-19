@@ -55,7 +55,7 @@ export default function ChatPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full flex-col bg-background">
+      <div className="flex h-full w-full flex-col bg-background">
         <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-3">
               <SidebarTrigger />
