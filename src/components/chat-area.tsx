@@ -1,31 +1,69 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { MessageSquare, QrCode } from "lucide-react";
-import ConnectPeerDialog from "./connect-dialog";
+import { MessageSquare, Paperclip, Send } from "lucide-react";
 import { Input } from "./ui/input";
-import { Paperclip, Send } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { cn } from "@/lib/utils";
 import { Room } from "./room-list";
+import { getCurrentUser } from "@/lib/auth";
+
+type Message = {
+    id: number;
+    sender: string;
+    text: string;
+    timestamp: string;
+    isMe: boolean;
+};
 
 type ChatAreaProps = {
     room: Room | null;
 }
 
 export default function ChatArea({ room }: ChatAreaProps) {
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const currentUser = getCurrentUser() || "You";
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (room) {
+      // Load messages from localStorage when room changes
+      const storedMessages = localStorage.getItem(`messages_${room.id}`);
+      setMessages(storedMessages ? JSON.parse(storedMessages) : []);
+    } else {
+        setMessages([]);
+    }
+  }, [room]);
   
-  // This is a placeholder. In a real app, this would come from the connection.
-  const messages = [
-      { id: 1, sender: "Alice", text: "Hey there!", timestamp: "10:30 AM", isMe: false },
-      { id: 2, sender: "You", text: "Hey! How's it going?", timestamp: "10:31 AM", isMe: true },
-      { id: 3, sender: "Alice", text: "Going great! Just setting up this new P2P chat app. It's pretty cool.", timestamp: "10:31 AM", isMe: false },
-      { id: 4, sender: "You", text: "Yeah, I agree. The room feature is neat.", timestamp: "10:32 AM", isMe: true },
-  ];
-  const currentUser = "You";
+  useEffect(() => {
+      // Scroll to bottom when new messages are added
+      if (scrollAreaRef.current) {
+          scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+      }
+  }, [messages]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !room) return;
+
+    const message: Message = {
+      id: Date.now(),
+      sender: currentUser,
+      text: newMessage,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true,
+    };
+
+    const updatedMessages = [...messages, message];
+    setMessages(updatedMessages);
+    // Persist messages to localStorage
+    localStorage.setItem(`messages_${room.id}`, JSON.stringify(updatedMessages));
+    setNewMessage("");
+  };
 
 
   if (!room) {
@@ -60,7 +98,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
           </div>
           
           {/* Messages Area */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
               <div className="space-y-4">
                   {messages.map((msg) => (
                       <div key={msg.id} className={cn("flex items-end gap-2", msg.isMe ? "justify-end" : "justify-start")}>
@@ -90,17 +128,22 @@ export default function ChatArea({ room }: ChatAreaProps) {
           
           {/* Message Input */}
           <div className="p-4 border-t">
-              <div className="relative">
-                  <Input placeholder="Type your message..." className="pr-20" />
+              <form onSubmit={handleSendMessage} className="relative">
+                  <Input 
+                    placeholder="Type your message..." 
+                    className="pr-20" 
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                  />
                   <div className="absolute top-1/2 right-2 -translate-y-1/2 flex items-center gap-1">
-                      <Button variant="ghost" size="icon">
+                      <Button type="button" variant="ghost" size="icon">
                           <Paperclip className="h-5 w-5" />
                       </Button>
-                       <Button size="icon">
+                       <Button type="submit" size="icon">
                           <Send className="h-5 w-5" />
                       </Button>
                   </div>
-              </div>
+              </form>
           </div>
       </div>
   )
