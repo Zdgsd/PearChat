@@ -58,7 +58,7 @@ export default function ChatPage() {
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-3">
-              <SidebarTrigger className="md:hidden" />
+              <SidebarTrigger />
               <Share2 className="h-8 w-8 text-primary"/>
               <h1 className="text-xl font-bold font-headline">PearChat</h1>
           </div>
@@ -92,7 +92,7 @@ export default function ChatPage() {
           </div>
         </header>
         <main className="flex flex-1 overflow-hidden">
-          <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0 md:flex" collapsible="icon">
+          <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="icon">
               <SidebarContent className="p-2">
                 <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
