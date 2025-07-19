@@ -14,16 +14,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, MessageSquarePlus, UserCircle } from "lucide-react";
+import { LogOut, UserCircle, Share2 } from "lucide-react";
 import ChatArea from "@/components/chat-area";
 import RoomList, { Room } from "@/components/room-list";
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarContent } from "@/components/ui/sidebar";
+import ConnectPeerDialog from "@/components/connect-dialog";
 
 export default function ChatPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [activeRoom, setActiveRoom] = useState<Room | null>(null);
+  const [isConnectDialogOpen, setIsConnectDialogOpen] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -57,8 +59,8 @@ export default function ChatPage() {
         <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-3">
               <SidebarTrigger className="md:hidden" />
-              <MessageSquarePlus className="h-8 w-8 text-primary"/>
-              <h1 className="text-xl font-bold font-headline">SecureP2P Chat</h1>
+              <Share2 className="h-8 w-8 text-primary"/>
+              <h1 className="text-xl font-bold font-headline">PearChat</h1>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -92,7 +94,7 @@ export default function ChatPage() {
         <main className="flex flex-1 overflow-hidden">
           <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0 md:flex" collapsible="icon">
               <SidebarContent className="p-2">
-                <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} />
+                <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
           </Sidebar>
           <SidebarInset className="p-4 h-full">
@@ -100,6 +102,7 @@ export default function ChatPage() {
           </SidebarInset>
         </main>
       </div>
+       <ConnectPeerDialog isOpen={isConnectDialogOpen} onClose={() => setIsConnectDialogOpen(false)} />
     </SidebarProvider>
   );
 }

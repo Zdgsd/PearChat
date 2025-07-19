@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Search, Lock, Users } from "lucide-react";
+import { PlusCircle, Search, Lock, Users, Share2 } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
+import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
 
 export type Room = {
   id: string;
@@ -38,9 +38,10 @@ const mockRooms: Room[] = [
 type RoomListProps = {
   onSelectRoom: (room: Room) => void;
   activeRoom: Room | null;
+  onConnectPeer: () => void;
 };
 
-export default function RoomList({ onSelectRoom, activeRoom }: RoomListProps) {
+export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: RoomListProps) {
   const [rooms, setRooms] = useState<Room[]>(mockRooms);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -157,6 +158,12 @@ export default function RoomList({ onSelectRoom, activeRoom }: RoomListProps) {
           </SidebarMenu>
         </SidebarGroup>
       </ScrollArea>
+      <SidebarFooter>
+        <Button onClick={onConnectPeer}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Connect to a Peer
+        </Button>
+      </SidebarFooter>
     </div>
   );
 }

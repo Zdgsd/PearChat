@@ -91,7 +91,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     },
     register: {
       title: "Create Account",
-      description: "Join SecureP2P Connect to start messaging.",
+      description: "Join PearChat to start messaging securely.",
       button: "Register",
       icon: <UserPlus className="mr-2 h-4 w-4" />,
     },

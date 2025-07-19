@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import QRCode from 'qrcode.react';
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QrCode, ScanLine, UserSearch, Wifi, Loader2, CheckCircle, Lock } from 'lucide-react';
+import { QrCode, ScanLine, UserSearch, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -68,7 +68,10 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
 
     pc.onicecandidate = event => {
         if (event.candidate) {
+            // In a real app, this candidate would be sent to the peer via a signaling server.
         } else {
+            // All ICE candidates have been gathered.
+            // Update the offer/answer with the complete SDP.
             if (pc.localDescription?.type === 'offer') {
                 setOffer(JSON.stringify(pc.localDescription));
                 setStep(ConnectionStep.ShowingOffer);
@@ -86,7 +89,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
             toast({ title: 'Success', description: 'Peer connected!', variant: 'default' });
             setTimeout(handleClose, 2000);
         };
-        dataChannel.onmessage = (e) => console.log("Got message:", e.data);
+        dataChannel.onmessage = (e) => console.log("Got message:", e.data); // In a real app, handle incoming messages.
     };
 
     peerConnectionRef.current = pc;
@@ -94,26 +97,33 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
   }
 
   const createOffer = async () => {
-    const pc = initializePeerConnection();
-    const dataChannel = pc.createDataChannel("chat");
-    dataChannel.onopen = () => {
-       setStep(ConnectionStep.Connected);
-       toast({ title: 'Success', description: 'Peer connected!', variant: 'default' });
-       setTimeout(handleClose, 2000);
-    };
-    dataChannel.onmessage = (e) => console.log("Got message:", e.data);
-    const sdpOffer = await pc.createOffer();
-    await pc.setLocalDescription(sdpOffer);
+    try {
+        const pc = initializePeerConnection();
+        const dataChannel = pc.createDataChannel("chat");
+        dataChannel.onopen = () => {
+           setStep(ConnectionStep.Connected);
+           toast({ title: 'Success', description: 'Peer connected!', variant: 'default' });
+           setTimeout(handleClose, 2000);
+        };
+        dataChannel.onmessage = (e) => console.log("Got message:", e.data);
+        const sdpOffer = await pc.createOffer();
+        await pc.setLocalDescription(sdpOffer);
+        // The rest is handled by the onicecandidate handler
+    } catch(e) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not create connection offer.' });
+        resetState();
+    }
   };
   
   const handleScannedOffer = async (decodedText: string) => {
     try {
+        stopScanner();
         const pc = initializePeerConnection();
         const offerSdp = JSON.parse(decodedText);
         await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
         const answerSdp = await pc.createAnswer();
         await pc.setLocalDescription(answerSdp);
-        stopScanner();
+        // onicecandidate will set the answer state
     } catch (e) {
         toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'Could not parse the connection offer.' });
         resetState();
@@ -122,10 +132,10 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
 
   const handleScannedAnswer = async (decodedText: string) => {
     try {
+        stopScanner();
         if(!peerConnectionRef.current) throw new Error("Peer connection not initialized");
         const answerSdp = JSON.parse(decodedText);
         await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answerSdp));
-        stopScanner();
     } catch(e) {
         toast({ variant: 'destructive', title: 'Connection Failed', description: 'Could not apply the connection answer.' });
         resetState();
@@ -133,16 +143,26 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
   }
 
   const startScanner = (onScanSuccess: (decodedText: string, decodedResult: any) => void) => {
-    const html5QrCode = new Html5Qrcode(scannerRegionId);
-    scannerRef.current = html5QrCode;
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        (errorMessage) => {}
-    ).catch(err => {
-        toast({variant: 'destructive', title: 'Scanner Error', description: 'Could not start QR code scanner. Check camera permissions.'});
-    });
+    // Ensure the container is visible and ready
+    setTimeout(() => {
+        const scannerElement = document.getElementById(scannerRegionId);
+        if (!scannerElement) {
+            toast({variant: 'destructive', title: 'Scanner Error', description: 'Cannot find scanner element.'});
+            return;
+        }
+
+        const html5QrCode = new Html5Qrcode(scannerRegionId);
+        scannerRef.current = html5QrCode;
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            (errorMessage) => {}
+        ).catch(err => {
+            toast({variant: 'destructive', title: 'Scanner Error', description: 'Could not start QR code scanner. Check camera permissions.'});
+            resetState();
+        });
+    }, 100);
   }
 
   const stopScanner = () => {
@@ -177,7 +197,13 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
     if (isOpen && step === ConnectionStep.ScanningAnswer) {
         startScanner(handleScannedAnswer);
     }
-    return () => stopScanner();
+    
+    // Cleanup function
+    return () => {
+        if (scannerRef.current && scannerRef.current.isScanning) {
+            stopScanner();
+        }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, isOpen]);
 
@@ -192,7 +218,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
             <div className="p-4 bg-white rounded-lg shadow-inner">
               <QRCode value={offer || ''} size={256} />
             </div>
-            <Button onClick={() => setStep(ConnectionStep.ScanningAnswer)}>Scan Answer</Button>
+            <Button onClick={() => setStep(ConnectionStep.ScanningAnswer)}>I'm Ready to Scan Their Answer</Button>
           </div>
         );
       case ConnectionStep.ScanningAnswer:
@@ -200,7 +226,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
             <div className="flex flex-col items-center gap-4 text-center">
                 <h3 className="font-semibold">2. Scan their Answer</h3>
                 <p className="text-sm text-muted-foreground">Scan the QR code your peer generated.</p>
-                <div id={scannerRegionId} className="w-full h-64 rounded-lg bg-slate-900" />
+                <div id={scannerRegionId} className="w-full h-64 rounded-lg bg-slate-900 overflow-hidden" />
             </div>
         );
       case ConnectionStep.ScanningOffer:
@@ -208,7 +234,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
             <div className="flex flex-col items-center gap-4 text-center">
                 <h3 className="font-semibold">Scan Peer's Offer</h3>
                 <p className="text-sm text-muted-foreground">Use your camera to scan their QR code.</p>
-                <div id={scannerRegionId} className="w-full h-64 rounded-lg bg-slate-900" />
+                <div id={scannerRegionId} className="w-full h-64 rounded-lg bg-slate-900 overflow-hidden" />
             </div>
         );
        case ConnectionStep.ShowingAnswer:

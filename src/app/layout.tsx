@@ -11,8 +11,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'SecureP2P Connect',
-  description: 'Secure, offline peer-to-peer messaging.',
+  title: 'PearChat',
+  description: 'Secure, peer-to-peer messaging with PearChat.',
 };
 
 export default function RootLayout({
