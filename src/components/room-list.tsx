@@ -20,6 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 
 export type Room = {
   id: string;
@@ -73,86 +74,90 @@ export default function RoomList({ onSelectRoom, activeRoom }: RoomListProps) {
   };
 
   return (
-    <aside className="w-full md:w-80 lg:w-96 flex flex-col border rounded-lg p-2 bg-card/50">
-      <div className="p-2 flex justify-between items-center">
-        <h2 className="text-lg font-bold font-headline">Rooms</h2>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <PlusCircle className="h-5 w-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create or Join a Room</DialogTitle>
-              <DialogDescription>
-                Create a new chat room or join an existing one by name.
-              </DialogDescription>
-            </DialogHeader>
-            <Tabs defaultValue="create">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="create">Create</TabsTrigger>
-                <TabsTrigger value="join">Join</TabsTrigger>
-              </TabsList>
-              <TabsContent value="create">
-                <form onSubmit={handleCreateRoom}>
-                  <CreateRoomForm />
-                  <DialogFooter className="mt-4">
-                    <Button type="submit">Create Room</Button>
+    <div className="flex flex-col h-full">
+      <SidebarHeader>
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-bold font-headline">Rooms</h2>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <PlusCircle className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create or Join a Room</DialogTitle>
+                <DialogDescription>
+                  Create a new chat room or join an existing one by name.
+                </DialogDescription>
+              </DialogHeader>
+              <Tabs defaultValue="create">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="create">Create</TabsTrigger>
+                  <TabsTrigger value="join">Join</TabsTrigger>
+                </TabsList>
+                <TabsContent value="create">
+                  <form onSubmit={handleCreateRoom}>
+                    <CreateRoomForm />
+                    <DialogFooter className="mt-4">
+                      <Button type="submit">Create Room</Button>
+                    </DialogFooter>
+                  </form>
+                </TabsContent>
+                <TabsContent value="join">
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="join-room-name">Room Name</Label>
+                      <Input id="join-room-name" placeholder="Exact room name..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="join-password">Password (if any)</Label>
+                      <Input id="join-password" type="password" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={() => toast({title: "Not Implemented", description: "Joining rooms will be available soon."})}>Join Room</Button>
                   </DialogFooter>
-                </form>
-              </TabsContent>
-              <TabsContent value="join">
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="join-room-name">Room Name</Label>
-                    <Input id="join-room-name" placeholder="Exact room name..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="join-password">Password (if any)</Label>
-                    <Input id="join-password" type="password" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={() => toast({title: "Not Implemented", description: "Joining rooms will be available soon."})}>Join Room</Button>
-                </DialogFooter>
-              </TabsContent>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <div className="p-2">
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
+        </div>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search rooms..." className="pl-8" />
         </div>
-      </div>
+      </SidebarHeader>
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-2">
-          {rooms.map((room) => (
-            <button
-              key={room.id}
-              className={cn(
-                  "w-full text-left p-3 flex items-center gap-4 rounded-lg hover:bg-muted transition-colors",
-                  activeRoom?.id === room.id && "bg-muted"
-              )}
-              onClick={() => onSelectRoom(room)}
-            >
-              <Avatar>
-                <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="font-semibold">{room.name}</div>
-                <div className="text-sm text-muted-foreground flex items-center">
-                    {room.type === 'private' ? <Lock className="h-3 w-3 mr-1" /> : <Users className="h-3 w-3 mr-1" />}
-                    {room.type === 'private' ? 'Private' : 'Public'}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
+        <SidebarGroup>
+          <SidebarGroupLabel>Your Rooms</SidebarGroupLabel>
+          <SidebarMenu>
+            {rooms.map((room) => (
+              <SidebarMenuItem key={room.id}>
+                <button
+                  className={cn(
+                      "w-full text-left p-2 flex items-center gap-4 rounded-lg hover:bg-muted transition-colors",
+                      activeRoom?.id === room.id && "bg-muted"
+                  )}
+                  onClick={() => onSelectRoom(room)}
+                >
+                  <Avatar>
+                    <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 overflow-hidden">
+                    <div className="font-semibold truncate">{room.name}</div>
+                    <div className="text-sm text-muted-foreground flex items-center">
+                        {room.type === 'private' ? <Lock className="h-3 w-3 mr-1" /> : <Users className="h-3 w-3 mr-1" />}
+                        {room.type === 'private' ? 'Private' : 'Public'}
+                    </div>
+                  </div>
+                </button>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </ScrollArea>
-    </aside>
+    </div>
   );
 }
 
