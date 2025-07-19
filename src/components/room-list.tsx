@@ -155,6 +155,9 @@ export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: Ro
             ))}
           </SidebarMenu>
         </SidebarGroup>
+        <div className="flex justify-center p-4">
+            <Button variant="outline" size="icon">R</Button>
+        </div>
       </ScrollArea>
       <SidebarFooter>
         <Button onClick={onConnectPeer}>
