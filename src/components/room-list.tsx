@@ -31,8 +31,6 @@ export type Room = {
 // Mock data
 const mockRooms: Room[] = [
   { id: "room-1", name: "General Chat", type: "public" },
-  { id: "room-2", name: "Project Phoenix", type: "private" },
-  { id: "room-3", name: "Random", type: "public" },
 ];
 
 type RoomListProps = {
