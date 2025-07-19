@@ -13,8 +13,10 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QrCode, ScanLine, Wifi, Loader2, CheckCircle } from 'lucide-react';
+import { QrCode, ScanLine, UserSearch, Wifi, Loader2, CheckCircle, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 type ConnectPeerDialogProps = {
   isOpen: boolean;
@@ -27,6 +29,7 @@ enum ConnectionStep {
   ScanningOffer,
   ShowingAnswer,
   ScanningAnswer,
+  EnterUsername,
   Connected,
 }
 
@@ -35,16 +38,17 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
   const [step, setStep] = useState<ConnectionStep>(ConnectionStep.Idle);
   const [offer, setOffer] = useState<string | null>(null);
   const [answer, setAnswer] = useState<string | null>(null);
+  const [username, setUsername] = useState('');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerRegionId = "qr-code-full-region";
 
-  // Placeholder for WebRTC logic
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
   const resetState = () => {
     setStep(ConnectionStep.Idle);
     setOffer(null);
     setAnswer(null);
+    setUsername('');
     if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
@@ -64,7 +68,6 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
 
     pc.onicecandidate = event => {
         if (event.candidate) {
-            // In a real app with a signaling server, you'd send this candidate
         } else {
             if (pc.localDescription?.type === 'offer') {
                 setOffer(JSON.stringify(pc.localDescription));
@@ -136,7 +139,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         onScanSuccess,
-        (errorMessage) => {} // scan error callback
+        (errorMessage) => {}
     ).catch(err => {
         toast({variant: 'destructive', title: 'Scanner Error', description: 'Could not start QR code scanner. Check camera permissions.'});
     });
@@ -147,6 +150,24 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
         scannerRef.current.stop().catch(err => console.error("Failed to stop scanner", err));
         scannerRef.current = null;
     }
+  }
+  
+  const handleConnectByUsername = () => {
+      // This is a mock. In a real app, this would use a signaling server
+      // to find the user and exchange offers/answers.
+      toast({
+          title: 'Connecting...',
+          description: `Sending connection request to ${username}.`
+      });
+      // Mock failure for now.
+      setTimeout(() => {
+          toast({
+              variant: 'destructive',
+              title: 'Connection Failed',
+              description: `User "${username}" not found or is not public.`
+          })
+          resetState();
+      }, 2000);
   }
 
   useEffect(() => {
@@ -209,22 +230,50 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
             <p className="text-muted-foreground">You can now chat securely.</p>
           </div>
         );
+       case ConnectionStep.EnterUsername:
+        return (
+            <div className="flex flex-col items-center gap-4 text-center w-full">
+                 <h3 className="font-semibold">Connect by Username</h3>
+                <p className="text-sm text-muted-foreground">Enter the exact username of a public user.</p>
+                <div className="w-full px-4 space-y-2">
+                    <Label htmlFor="username" className="sr-only">Username</Label>
+                    <Input id="username" placeholder="peer_username" value={username} onChange={(e) => setUsername(e.target.value)} />
+                </div>
+                <Button onClick={handleConnectByUsername} className="w-full max-w-xs">Connect</Button>
+            </div>
+        );
       default: // Idle
         return (
-          <div className="flex flex-col sm:flex-row gap-6 p-4">
-            <div className="flex-1 flex flex-col items-center text-center gap-3 p-6 rounded-lg border bg-card/50">
-                <QrCode className="w-10 h-10 text-primary" />
-                <h3 className="font-headline font-semibold">Create Invite</h3>
-                <p className="text-sm text-muted-foreground">Generate a QR code that another peer can scan to connect with you.</p>
-                <Button onClick={createOffer}>Generate Offer</Button>
-            </div>
-            <div className="flex-1 flex flex-col items-center text-center gap-3 p-6 rounded-lg border bg-card/50">
-                <ScanLine className="w-10 h-10 text-primary" />
-                <h3 className="font-headline font-semibold">Scan Invite</h3>
-                <p className="text-sm text-muted-foreground">Use your camera to scan a peer's QR code and initiate a connection.</p>
-                <Button onClick={() => setStep(ConnectionStep.ScanningOffer)}>Scan Offer</Button>
-            </div>
-          </div>
+          <Tabs defaultValue="invite" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="invite">QR Invite</TabsTrigger>
+                <TabsTrigger value="username">Username</TabsTrigger>
+            </TabsList>
+            <TabsContent value="invite">
+                <div className="flex flex-col sm:flex-row gap-6 p-4">
+                    <div className="flex-1 flex flex-col items-center text-center gap-3 p-6 rounded-lg border bg-card/50">
+                        <QrCode className="w-10 h-10 text-primary" />
+                        <h3 className="font-headline font-semibold">Create Invite</h3>
+                        <p className="text-sm text-muted-foreground">Generate a QR code for a peer to scan.</p>
+                        <Button onClick={createOffer}>Generate Offer</Button>
+                    </div>
+                    <div className="flex-1 flex flex-col items-center text-center gap-3 p-6 rounded-lg border bg-card/50">
+                        <ScanLine className="w-10 h-10 text-primary" />
+                        <h3 className="font-headline font-semibold">Scan Invite</h3>
+                        <p className="text-sm text-muted-foreground">Scan a peer's QR code to connect.</p>
+                        <Button onClick={() => setStep(ConnectionStep.ScanningOffer)}>Scan Offer</Button>
+                    </div>
+                </div>
+            </TabsContent>
+            <TabsContent value="username">
+                 <div className="flex flex-col items-center gap-4 text-center p-4 min-h-[220px] justify-center">
+                    <UserSearch className="w-10 h-10 text-primary" />
+                    <h3 className="font-headline font-semibold">Connect by Username</h3>
+                    <p className="text-sm text-muted-foreground">Enter the exact username of a public user you wish to connect with.</p>
+                    <Button onClick={() => setStep(ConnectionStep.EnterUsername)}>Enter Username</Button>
+                </div>
+            </TabsContent>
+          </Tabs>
         );
     }
   };
@@ -235,7 +284,7 @@ export default function ConnectPeerDialog({ isOpen, onClose }: ConnectPeerDialog
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl text-center">Connect to Peer</DialogTitle>
           <DialogDescription className="text-center">
-            Establish a secure P2P connection using QR codes.
+            {step === ConnectionStep.Idle ? "Establish a secure P2P connection." : "Follow the steps to connect."}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 min-h-[300px] flex items-center justify-center">

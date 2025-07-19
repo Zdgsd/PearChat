@@ -13,20 +13,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, MessageSquarePlus, Users } from "lucide-react";
+import { LogOut, MessageSquarePlus, UserCircle, Users } from "lucide-react";
 import ChatArea from "@/components/chat-area";
-import { useToast } from "@/hooks/use-toast";
-import Image from 'next/image';
-
-type Peer = {
-  id: string;
-  connection: RTCPeerConnection;
-};
+import RoomList from "@/components/room-list";
 
 export default function ChatPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [activeRoom, setActiveRoom] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -77,6 +72,11 @@ export default function ChatPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <UserCircle className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -86,6 +86,7 @@ export default function ChatPage() {
         </div>
       </header>
       <main className="flex flex-1 flex-col md:flex-row gap-4 p-4 overflow-hidden">
+        <RoomList onSelectRoom={setActiveRoom} />
         <ChatArea />
       </main>
     </div>
