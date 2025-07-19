@@ -92,8 +92,8 @@ export default function ChatPage() {
           </div>
         </header>
         <main className="flex flex-1 overflow-hidden">
-          <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="icon">
-              <SidebarRail />
+          <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="offcanvas">
+              <SidebarRail>R</SidebarRail>
               <SidebarContent className="p-2">
                 <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
