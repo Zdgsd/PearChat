@@ -2,17 +2,20 @@
 
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { QrCode } from "lucide-react";
+import { MessageSquare, QrCode } from "lucide-react";
 import ConnectPeerDialog from "./connect-dialog";
 import { Input } from "./ui/input";
 import { Paperclip, Send } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { cn } from "@/lib/utils";
+import { Room } from "./room-list";
 
-const isConnected = true; // Placeholder, assuming we are in a room
+type ChatAreaProps = {
+    room: Room | null;
+}
 
-export default function ChatArea() {
+export default function ChatArea({ room }: ChatAreaProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   
   // This is a placeholder. In a real app, this would come from the connection.
@@ -25,27 +28,20 @@ export default function ChatArea() {
   const currentUser = "You";
 
 
-  if (!isConnected) {
+  if (!room) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed border-muted bg-card/50 p-8 text-center">
         <>
           <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-4">
-             <QrCode className="h-12 w-12 text-primary" />
+             <MessageSquare className="h-12 w-12 text-primary" />
           </div>
           <h2 className="text-2xl font-bold font-headline tracking-tight">
-            Ready for a secure chat?
+            Select a room to start chatting
           </h2>
           <p className="max-w-md mx-auto mt-2 text-muted-foreground">
-            Join a room or connect directly with a peer to start a direct, end-to-end encrypted conversation.
+            Join a room or create a new one to begin a secure conversation. Your messages are end-to-end encrypted.
           </p>
-          <Button onClick={() => setIsConnecting(true)} className="mt-6">
-            Connect to a Peer
-          </Button>
         </>
-        <ConnectPeerDialog
-          isOpen={isConnecting}
-          onClose={() => setIsConnecting(false)}
-        />
       </div>
     );
   }
@@ -55,11 +51,11 @@ export default function ChatArea() {
           {/* Chat Header */}
           <div className="p-4 border-b flex items-center gap-4">
               <Avatar>
-                  <AvatarFallback>GC</AvatarFallback>
+                  <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-lg font-bold">General Chat</h2>
-                <p className="text-sm text-muted-foreground">12 members online</p>
+                <h2 className="text-lg font-bold">{room.name}</h2>
+                <p className="text-sm text-muted-foreground">{room.type === 'public' ? 'Public Room' : 'Private Room'}</p>
               </div>
           </div>
           

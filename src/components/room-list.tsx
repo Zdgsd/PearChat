@@ -19,26 +19,27 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-type Room = {
+export type Room = {
   id: string;
   name: string;
   type: "public" | "private";
-  members: number;
 };
 
 // Mock data
 const mockRooms: Room[] = [
-  { id: "room-1", name: "General Chat", type: "public", members: 12 },
-  { id: "room-2", name: "Project Phoenix", type: "private", members: 5 },
-  { id: "room-3", name: "Random", type: "public", members: 34 },
+  { id: "room-1", name: "General Chat", type: "public" },
+  { id: "room-2", name: "Project Phoenix", type: "private" },
+  { id: "room-3", name: "Random", type: "public" },
 ];
 
 type RoomListProps = {
-  onSelectRoom: (roomId: string) => void;
+  onSelectRoom: (room: Room) => void;
+  activeRoom: Room | null;
 };
 
-export default function RoomList({ onSelectRoom }: RoomListProps) {
+export default function RoomList({ onSelectRoom, activeRoom }: RoomListProps) {
   const [rooms, setRooms] = useState<Room[]>(mockRooms);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -63,12 +64,12 @@ export default function RoomList({ onSelectRoom }: RoomListProps) {
       id: `room-${Date.now()}`,
       name: roomName,
       type: roomType,
-      members: 1,
     };
 
     setRooms([newRoom, ...rooms]);
     toast({ title: "Room Created!", description: `"${roomName}" has been created.` });
     setIsCreateDialogOpen(false);
+    onSelectRoom(newRoom);
   };
 
   return (
@@ -131,8 +132,11 @@ export default function RoomList({ onSelectRoom }: RoomListProps) {
           {rooms.map((room) => (
             <button
               key={room.id}
-              className="w-full text-left p-3 flex items-center gap-4 rounded-lg hover:bg-muted transition-colors"
-              onClick={() => onSelectRoom(room.id)}
+              className={cn(
+                  "w-full text-left p-3 flex items-center gap-4 rounded-lg hover:bg-muted transition-colors",
+                  activeRoom?.id === room.id && "bg-muted"
+              )}
+              onClick={() => onSelectRoom(room)}
             >
               <Avatar>
                 <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -141,7 +145,7 @@ export default function RoomList({ onSelectRoom }: RoomListProps) {
                 <div className="font-semibold">{room.name}</div>
                 <div className="text-sm text-muted-foreground flex items-center">
                     {room.type === 'private' ? <Lock className="h-3 w-3 mr-1" /> : <Users className="h-3 w-3 mr-1" />}
-                    {room.members} members
+                    {room.type === 'private' ? 'Private' : 'Public'}
                 </div>
               </div>
             </button>

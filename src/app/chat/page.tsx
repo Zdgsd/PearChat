@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, MessageSquarePlus, UserCircle, Users } from "lucide-react";
 import ChatArea from "@/components/chat-area";
-import RoomList from "@/components/room-list";
+import RoomList, { Room } from "@/components/room-list";
 
 export default function ChatPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [activeRoom, setActiveRoom] = useState<string | null>(null);
+  const [activeRoom, setActiveRoom] = useState<Room | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -86,8 +86,8 @@ export default function ChatPage() {
         </div>
       </header>
       <main className="flex flex-1 flex-col md:flex-row gap-4 p-4 overflow-hidden">
-        <RoomList onSelectRoom={setActiveRoom} />
-        <ChatArea />
+        <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} />
+        <ChatArea room={activeRoom} />
       </main>
     </div>
   );
