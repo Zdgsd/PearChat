@@ -17,7 +17,7 @@ import {
 import { LogOut, UserCircle, Share2 } from "lucide-react";
 import ChatArea from "@/components/chat-area";
 import RoomList, { Room } from "@/components/room-list";
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarContent } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarContent, SidebarRail } from "@/components/ui/sidebar";
 import ConnectPeerDialog from "@/components/connect-dialog";
 
 export default function ChatPage() {
@@ -93,6 +93,7 @@ export default function ChatPage() {
         </header>
         <main className="flex flex-1 overflow-hidden">
           <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="icon">
+              <SidebarRail />
               <SidebarContent className="p-2">
                 <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
