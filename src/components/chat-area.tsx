@@ -3,18 +3,24 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { MessageSquare, Paperclip, Send } from "lucide-react";
+import { MessageSquare, Paperclip, Send, File as FileIcon } from "lucide-react";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { cn } from "@/lib/utils";
 import { Room } from "./room-list";
 import { getCurrentUser } from "@/lib/auth";
+import Image from "next/image";
 
 type Message = {
     id: number;
     sender: string;
-    text: string;
+    text?: string;
+    attachment?: {
+      name: string;
+      type: 'image' | 'file';
+      url: string;
+    };
     timestamp: string;
     isMe: boolean;
 };
@@ -28,6 +34,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
   const [newMessage, setNewMessage] = useState("");
   const currentUser = getCurrentUser() || "You";
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (room) {
@@ -46,6 +53,13 @@ export default function ChatArea({ room }: ChatAreaProps) {
       }
   }, [messages]);
 
+  const addMessage = (message: Message) => {
+    if (!room) return;
+    const updatedMessages = [...messages, message];
+    setMessages(updatedMessages);
+    localStorage.setItem(`messages_${room.id}`, JSON.stringify(updatedMessages));
+  }
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !room) return;
@@ -57,12 +71,41 @@ export default function ChatArea({ room }: ChatAreaProps) {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
     };
-
-    const updatedMessages = [...messages, message];
-    setMessages(updatedMessages);
-    // Persist messages to localStorage
-    localStorage.setItem(`messages_${room.id}`, JSON.stringify(updatedMessages));
+    
+    addMessage(message);
     setNewMessage("");
+  };
+
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !room) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const url = e.target?.result as string;
+      const message: Message = {
+        id: Date.now(),
+        sender: currentUser,
+        attachment: {
+          name: file.name,
+          type: file.type.startsWith("image/") ? 'image' : 'file',
+          url: url,
+        },
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isMe: true,
+      };
+      addMessage(message);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
 
@@ -109,10 +152,32 @@ export default function ChatArea({ room }: ChatAreaProps) {
                               </Avatar>
                           )}
                           <div className={cn(
-                              "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2",
+                              "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-3 py-2",
                               msg.isMe ? "bg-primary text-primary-foreground" : "bg-muted"
                           )}>
-                              <p className="text-sm">{msg.text}</p>
+                              {msg.text && <p className="text-sm">{msg.text}</p>}
+                              {msg.attachment && (
+                                <div className="space-y-2">
+                                  {msg.attachment.type === 'image' ? (
+                                    <Image 
+                                      src={msg.attachment.url} 
+                                      alt={msg.attachment.name}
+                                      width={250}
+                                      height={250}
+                                      className="rounded-md object-cover"
+                                    />
+                                  ) : (
+                                    <a 
+                                      href={msg.attachment.url} 
+                                      download={msg.attachment.name}
+                                      className="flex items-center gap-2 p-2 rounded-md bg-background/20"
+                                    >
+                                      <FileIcon className="h-6 w-6" />
+                                      <span className="text-sm font-medium">{msg.attachment.name}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              )}
                               <p className="text-xs mt-1 text-right opacity-70">{msg.timestamp}</p>
                           </div>
                            {msg.isMe && (
@@ -136,11 +201,14 @@ export default function ChatArea({ room }: ChatAreaProps) {
                     onChange={(e) => setNewMessage(e.target.value)}
                   />
                   <div className="absolute top-1/2 right-2 -translate-y-1/2 flex items-center gap-1">
-                      <Button type="button" variant="ghost" size="icon">
+                      <Button type="button" variant="ghost" size="icon" onClick={handleAttachmentClick}>
                           <Paperclip className="h-5 w-5" />
+                          <span className="sr-only">Attach file</span>
                       </Button>
+                      <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                        <Button type="submit" size="icon">
                           <Send className="h-5 w-5" />
+                          <span className="sr-only">Send message</span>
                       </Button>
                   </div>
               </form>
