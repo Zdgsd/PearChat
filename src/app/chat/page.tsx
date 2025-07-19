@@ -70,7 +70,7 @@ export default function ChatPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar>
-                    <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser}`} alt={currentUser} />
+                    <AvatarImage src="" alt={currentUser} />
                     <AvatarFallback>{currentUser.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -91,17 +91,17 @@ export default function ChatPage() {
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
           <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="offcanvas">
               <SidebarRail>R</SidebarRail>
               <SidebarContent className="p-2">
                 <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
           </Sidebar>
-          <SidebarInset className="p-4 h-full">
+          <SidebarInset className="p-4 flex flex-col">
              <ChatArea room={activeRoom} />
           </SidebarInset>
-        </main>
+        </div>
       </div>
        <ConnectPeerDialog isOpen={isConnectDialogOpen} onClose={() => setIsConnectDialogOpen(false)} />
     </SidebarProvider>

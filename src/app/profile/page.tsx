@@ -53,7 +53,7 @@ export default function ProfilePage() {
         bio: profile.bio || "",
         isPublic: profile.isPublic === undefined ? true : profile.isPublic,
       });
-      setAvatar(profile.avatar || `https://i.pravatar.cc/150?u=${user}`);
+      setAvatar(profile.avatar || null);
     }
   }, [router, form]);
   

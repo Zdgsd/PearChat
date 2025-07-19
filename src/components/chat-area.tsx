@@ -147,7 +147,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
                       <div key={msg.id} className={cn("flex items-end gap-2", msg.isMe ? "justify-end" : "justify-start")}>
                           {!msg.isMe && (
                               <Avatar className="h-8 w-8">
-                                  <AvatarImage src={`https://i.pravatar.cc/150?u=${msg.sender}`} />
+                                  <AvatarImage src="" />
                                   <AvatarFallback>{msg.sender.charAt(0)}</AvatarFallback>
                               </Avatar>
                           )}
@@ -182,7 +182,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
                           </div>
                            {msg.isMe && (
                               <Avatar className="h-8 w-8">
-                                   <AvatarImage src={`https://i.pravatar.cc/150?u=${currentUser}`} />
+                                   <AvatarImage src="" />
                                   <AvatarFallback>{currentUser.charAt(0)}</AvatarFallback>
                               </Avatar>
                           )}

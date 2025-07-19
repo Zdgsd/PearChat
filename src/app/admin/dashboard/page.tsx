@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                     <Avatar>
-                                        <AvatarImage src={`https://i.pravatar.cc/150?u=${user.username}`} />
+                                        <AvatarImage src="" />
                                         <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div className="font-medium">{user.username}</div>
