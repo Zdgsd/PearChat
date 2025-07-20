@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { MessageSquare, Paperclip, Send, File as FileIcon } from "lucide-react";
+import { MessageSquare, Paperclip, Send, File as FileIcon, Share2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -109,14 +109,14 @@ export default function ChatArea({ room }: ChatAreaProps) {
   if (!room) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-transparent">
-        <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-4">
-           <MessageSquare className="h-12 w-12 text-primary" />
+        <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-5">
+           <Share2 className="h-12 w-12 text-primary" />
         </div>
         <h2 className="text-2xl font-bold font-headline tracking-tight">
-          Select a room to start chatting
+          Welcome to PearChat
         </h2>
         <p className="max-w-md mx-auto mt-2 text-muted-foreground">
-          Join a room or connect with a peer to begin a secure conversation. Your messages are end-to-end encrypted.
+          Select a room, create a new one, or connect with a peer to begin a secure P2P conversation.
         </p>
       </div>
     );
@@ -136,6 +136,13 @@ export default function ChatArea({ room }: ChatAreaProps) {
           
           <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
               <div className="p-4 space-y-4">
+                  {messages.length === 0 && (
+                     <div className="flex flex-col items-center justify-center h-full p-8 text-center text-muted-foreground">
+                        <MessageSquare className="h-10 w-10 mb-4" />
+                        <h3 className="font-semibold">It's quiet in here...</h3>
+                        <p className="text-sm">Be the first to send a message!</p>
+                    </div>
+                  )}
                   {messages.map((msg) => (
                       <div key={msg.id} className={cn("flex items-end gap-2", msg.isMe ? "justify-end" : "justify-start")}>
                           {!msg.isMe && (

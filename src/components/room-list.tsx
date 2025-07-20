@@ -21,18 +21,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarFooter } from "@/components/ui/sidebar";
+import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarFooter, SidebarContent } from "@/components/ui/sidebar";
 
 export type Room = {
   id: string;
   name: string;
   type: "public" | "private";
 };
-
-// Mock data
-const mockRooms: Room[] = [
-  { id: "room-1", name: "General Chat", type: "public" },
-];
 
 type RoomListProps = {
   onSelectRoom: (room: Room) => void;
@@ -41,11 +36,11 @@ type RoomListProps = {
 };
 
 export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: RoomListProps) {
-  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleCreateRoom = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateRoom = (event: React.FormEvent<HTMLFormEvent>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const roomName = formData.get("roomName") as string;
@@ -128,10 +123,15 @@ export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: Ro
           <Input placeholder="Search rooms..." className="pl-8" />
         </div>
       </SidebarHeader>
-      <ScrollArea className="flex-1">
+      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Your Rooms</SidebarGroupLabel>
           <SidebarMenu>
+            {rooms.length === 0 && (
+                <div className="text-center text-muted-foreground p-4 text-sm">
+                    No rooms yet. Create one to start chatting!
+                </div>
+            )}
             {rooms.map((room) => (
               <SidebarMenuItem key={room.id}>
                 <button
@@ -156,7 +156,7 @@ export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: Ro
             ))}
           </SidebarMenu>
         </SidebarGroup>
-      </ScrollArea>
+      </SidebarContent>
       <SidebarFooter>
         <Button onClick={onConnectPeer}>
             <Share2 className="mr-2 h-4 w-4" />

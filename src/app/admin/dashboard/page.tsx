@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,13 +18,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Mock data, in a real P2P app this would be dynamically populated
-// from the admin's own peer connections.
-const mockConnectedUsers = [
-  { id: "user-1", username: "Alice", ip: "192.168.1.101", connectedAt: new Date() },
-  { id: "user-2", username: "Bob", ip: "192.168.1.102", connectedAt: new Date(Date.now() - 5 * 60000) },
-  { id: "user-3", username: "Charlie", ip: "192.168.1.103", connectedAt: new Date(Date.now() - 15 * 60000) },
-];
+// In a real P2P app this would be dynamically populated.
+// For a clean deployable version, we start with an empty list.
+const connectedUsers: any[] = [];
 
 
 export default function AdminDashboardPage() {
@@ -71,7 +68,7 @@ export default function AdminDashboardPage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{mockConnectedUsers.length}</div>
+                    <div className="text-2xl font-bold">{connectedUsers.length}</div>
                     <p className="text-xs text-muted-foreground">Currently active P2P sessions</p>
                 </CardContent>
             </Card>
@@ -103,7 +100,14 @@ export default function AdminDashboardPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {mockConnectedUsers.map(user => (
+                    {connectedUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                          No connected users.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      connectedUsers.map(user => (
                          <TableRow key={user.id}>
                             <TableCell>
                                 <div className="flex items-center gap-3">
@@ -127,7 +131,8 @@ export default function AdminDashboardPage() {
                                 </Button>
                             </TableCell>
                         </TableRow>
-                    ))}
+                      ))
+                    )}
                 </TableBody>
             </Table>
           </CardContent>
