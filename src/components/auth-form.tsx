@@ -54,12 +54,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
     // Use a small timeout to allow UI to update before blocking the thread
     setTimeout(() => {
       try {
-        let success = false;
         if (mode === 'admin') {
-          success = adminLogin(values.username, values.password);
+          const success = adminLogin(values.username, values.password);
           if (success) {
             toast({ title: "Admin access granted." });
             router.push("/admin/dashboard");
+            router.refresh(); // Ensure the page reloads to check auth state
           } else {
              throw new Error("Invalid admin credentials.");
           }
@@ -68,10 +68,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
           toast({ title: "Success", description: "Registration successful. Please log in." });
           router.push("/");
         } else { // mode === "login"
-          success = login(values.username, values.password);
+          const success = login(values.username, values.password);
           if (success) {
             toast({ title: "Welcome back!" });
             router.push("/chat");
+            router.refresh();
           } else {
             throw new Error("Invalid username or password.");
           }
