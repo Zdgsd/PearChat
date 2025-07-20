@@ -51,35 +51,38 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    try {
-      if (mode === "register") {
-        register(values.username, values.password);
-        toast({ title: "Success", description: "Registration successful. Please log in." });
-        router.push("/");
-      } else if (mode === "login") {
-        if (login(values.username, values.password)) {
-          toast({ title: "Welcome back!" });
-          router.push("/chat");
-        } else {
-          throw new Error("Invalid username or password.");
+    // Use a small timeout to allow UI to update before blocking the thread
+    setTimeout(() => {
+      try {
+        if (mode === "register") {
+          register(values.username, values.password);
+          toast({ title: "Success", description: "Registration successful. Please log in." });
+          router.push("/");
+        } else if (mode === "login") {
+          if (login(values.username, values.password)) {
+            toast({ title: "Welcome back!" });
+            router.push("/chat");
+          } else {
+            throw new Error("Invalid username or password.");
+          }
+        } else if (mode === "admin") {
+           if (adminLogin(values.username, values.password)) {
+            toast({ title: "Admin access granted." });
+            router.push("/admin/dashboard");
+          } else {
+            throw new Error("Invalid admin credentials.");
+          }
         }
-      } else if (mode === "admin") {
-         if (adminLogin(values.username, values.password)) {
-          toast({ title: "Admin access granted." });
-          router.push("/admin/dashboard");
-        } else {
-          throw new Error("Invalid admin credentials.");
-        }
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: error.message || "An unexpected error occurred.",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Failed",
-        description: error.message || "An unexpected error occurred.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    }, 100);
   };
 
   const titles = {
