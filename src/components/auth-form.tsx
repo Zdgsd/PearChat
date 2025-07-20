@@ -51,37 +51,45 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    // Use a small timeout to allow UI to update before blocking the thread
     setTimeout(() => {
       try {
+        let success = false;
+        let errorMessage = "An unexpected error occurred.";
+
         if (mode === 'admin') {
-          const success = adminLogin(values.username, values.password);
+          success = adminLogin(values.username, values.password);
           if (success) {
             toast({ title: "Admin access granted." });
             router.push("/admin/dashboard");
-            router.refresh(); // Ensure the page reloads to check auth state
+            router.refresh();
           } else {
-             throw new Error("Invalid admin credentials.");
+            errorMessage = "Invalid admin credentials.";
           }
         } else if (mode === "register") {
           register(values.username, values.password);
           toast({ title: "Success", description: "Registration successful. Please log in." });
           router.push("/");
+          return; // Skip final error handling
         } else { // mode === "login"
-          const success = login(values.username, values.password);
+          success = login(values.username, values.password);
           if (success) {
             toast({ title: "Welcome back!" });
             router.push("/chat");
             router.refresh();
           } else {
-            throw new Error("Invalid username or password.");
+            errorMessage = "Invalid username or password.";
           }
         }
+
+        if (!success) {
+            throw new Error(errorMessage);
+        }
+
       } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Authentication Failed",
-          description: error.message || "An unexpected error occurred.",
+          description: error.message,
         });
       } finally {
         setIsLoading(false);
