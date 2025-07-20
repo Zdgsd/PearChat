@@ -4,7 +4,6 @@
 
 const USERS_KEY = "p2p_chat_users";
 const CURRENT_USER_KEY = "p2p_chat_current_user";
-const ADMIN_USER_KEY = "p2p_admin_user";
 
 const getStoredUsers = (): Map<string, string> => {
   if (typeof window === "undefined") return new Map();
@@ -31,26 +30,14 @@ export const login = (username: string, password: string): boolean => {
   if (users.has(username) && users.get(username) === password) {
     if (typeof window === "undefined") return false;
     localStorage.setItem(CURRENT_USER_KEY, username);
-    localStorage.removeItem(ADMIN_USER_KEY);
     return true;
   }
   return false;
 };
 
-export const adminLogin = (username: string, password: string): boolean => {
-  if (username === "admina" && password === "admina") {
-    if (typeof window === "undefined") return false;
-    localStorage.setItem(ADMIN_USER_KEY, username);
-    localStorage.removeItem(CURRENT_USER_KEY);
-    return true;
-  }
-  return false;
-}
-
 export const logout = (): void => {
   if (typeof window === "undefined") return;
   localStorage.removeItem(CURRENT_USER_KEY);
-  localStorage.removeItem(ADMIN_USER_KEY);
 };
 
 export const getCurrentUser = (): string | null => {
@@ -58,11 +45,6 @@ export const getCurrentUser = (): string | null => {
   return localStorage.getItem(CURRENT_USER_KEY);
 };
 
-export const getAdminUser = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(ADMIN_USER_KEY);
-};
-
 export const isAuthenticated = (): boolean => {
-    return !!getCurrentUser() || !!getAdminUser();
+    return !!getCurrentUser();
 }
