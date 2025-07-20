@@ -56,7 +56,6 @@ export default function AdminAuthForm() {
         if (success) {
           toast({ title: "Admin access granted." });
           router.push("/admin/dashboard");
-          router.refresh(); // Ensure the page state is updated
         } else {
           throw new Error("Invalid admin credentials.");
         }

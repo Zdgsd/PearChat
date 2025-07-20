@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -5,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Lock, LogIn, UserPlus, Shield } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,7 @@ import {
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "./logo";
-import { login, register, adminLogin } from "@/lib/auth";
+import { login, register } from "@/lib/auth";
 
 const formSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters.").max(50),
@@ -36,7 +37,7 @@ const formSchema = z.object({
 });
 
 type AuthFormProps = {
-  mode: "login" | "register" | "admin";
+  mode: "login" | "register";
 };
 
 export default function AuthForm({ mode }: AuthFormProps) {
@@ -53,38 +54,19 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setIsLoading(true);
     setTimeout(() => {
       try {
-        let success = false;
-        let errorMessage = "An unexpected error occurred.";
-
-        if (mode === 'admin') {
-          success = adminLogin(values.username, values.password);
-          if (success) {
-            toast({ title: "Admin access granted." });
-            router.push("/admin/dashboard");
-            router.refresh();
-          } else {
-            errorMessage = "Invalid admin credentials.";
-          }
-        } else if (mode === "register") {
+        if (mode === "register") {
           register(values.username, values.password);
           toast({ title: "Success", description: "Registration successful. Please log in." });
           router.push("/");
-          return; // Skip final error handling
         } else { // mode === "login"
-          success = login(values.username, values.password);
+          const success = login(values.username, values.password);
           if (success) {
             toast({ title: "Welcome back!" });
             router.push("/chat");
-            router.refresh();
           } else {
-            errorMessage = "Invalid username or password.";
+            throw new Error("Invalid username or password.");
           }
         }
-
-        if (!success) {
-            throw new Error(errorMessage);
-        }
-
       } catch (error: any) {
         toast({
           variant: "destructive",
@@ -109,12 +91,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
       description: "Join PearChat to start messaging securely.",
       button: "Register",
       icon: <UserPlus className="mr-2 h-4 w-4" />,
-    },
-    admin: {
-      title: "Admin Access",
-      description: "Enter credentials for the admin panel.",
-      button: "Enter",
-      icon: <Shield className="mr-2 h-4 w-4" />,
     },
   };
 
@@ -178,14 +154,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   Login here
                 </Link>
               </p>
-            )}
-             {mode === 'admin' && (
-               <p className="text-sm text-muted-foreground">
-                 Not an admin?{' '}
-                 <Link href="/" className="font-semibold text-primary hover:underline">
-                   Go to user login
-                 </Link>
-               </p>
             )}
           </CardFooter>
         </form>
