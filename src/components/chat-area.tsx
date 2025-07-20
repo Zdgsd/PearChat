@@ -111,26 +111,23 @@ export default function ChatArea({ room }: ChatAreaProps) {
 
   if (!room) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed border-muted bg-card/50 p-8 text-center">
-        <>
-          <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-4">
-             <MessageSquare className="h-12 w-12 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold font-headline tracking-tight">
-            Select a room to start chatting
-          </h2>
-          <p className="max-w-md mx-auto mt-2 text-muted-foreground">
-            Join a room or create a new one to begin a secure conversation. Your messages are end-to-end encrypted.
-          </p>
-        </>
+      <div className="flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed border-muted bg-card/50 p-8 text-center">
+        <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-4">
+           <MessageSquare className="h-12 w-12 text-primary" />
+        </div>
+        <h2 className="text-2xl font-bold font-headline tracking-tight">
+          Select a room to start chatting
+        </h2>
+        <p className="max-w-md mx-auto mt-2 text-muted-foreground">
+          Join a room or create a new one to begin a secure conversation. Your messages are end-to-end encrypted.
+        </p>
       </div>
     );
   }
 
   return (
-      <div className="flex-1 flex flex-col h-full rounded-lg border bg-card/50">
-          {/* Chat Header */}
-          <div className="p-4 border-b flex items-center gap-4">
+      <div className="flex flex-col h-full rounded-lg border bg-card/50">
+          <div className="p-4 border-b flex items-center gap-4 shrink-0">
               <Avatar>
                   <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
@@ -140,7 +137,6 @@ export default function ChatArea({ room }: ChatAreaProps) {
               </div>
           </div>
           
-          {/* Messages Area */}
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
               <div className="space-y-4">
                   {messages.map((msg) => (
@@ -191,8 +187,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
               </div>
           </ScrollArea>
           
-          {/* Message Input */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t shrink-0">
               <form onSubmit={handleSendMessage} className="relative">
                   <Input 
                     placeholder="Type your message..." 
