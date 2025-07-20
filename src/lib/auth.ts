@@ -38,7 +38,7 @@ export const login = (username: string, password: string): boolean => {
 };
 
 export const adminLogin = (username: string, password: string): boolean => {
-  if (username === "a" && password === "a") {
+  if (username === "admin" && password === "admin") {
     if (typeof window === "undefined") return false;
     localStorage.setItem(ADMIN_USER_KEY, username);
     localStorage.removeItem(CURRENT_USER_KEY);
