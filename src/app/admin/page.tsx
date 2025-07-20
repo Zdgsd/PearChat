@@ -1,5 +1,5 @@
 
-import AuthForm from "@/components/auth-form";
+import AdminAuthForm from "@/components/admin-auth-form";
 import { Share2 } from "lucide-react";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
             <Share2 className="h-4 w-4" /> Go back to PearChat
         </Link>
       </div>
-      <AuthForm mode="admin" />
+      <AdminAuthForm />
     </main>
   );
 }
