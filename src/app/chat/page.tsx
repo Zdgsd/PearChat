@@ -19,6 +19,8 @@ import ChatArea from "@/components/chat-area";
 import RoomList, { Room } from "@/components/room-list";
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarRail } from "@/components/ui/sidebar";
 import ConnectPeerDialog from "@/components/connect-dialog";
+import { syncState } from "@/ai/flows/state-sync-flow";
+import { AppState } from "@/ai/schemas";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -26,6 +28,8 @@ export default function ChatPage() {
   const [isClient, setIsClient] = useState(false);
   const [activeRoom, setActiveRoom] = useState<Room | null>(null);
   const [isConnectDialogOpen, setIsConnectDialogOpen] = useState(false);
+  const [appState, setAppState] = useState<AppState>({ rooms: [], profiles: [] });
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -36,6 +40,29 @@ export default function ChatPage() {
       setCurrentUser(user);
     }
   }, [router]);
+  
+  useEffect(() => {
+    if(!currentUser) return;
+    
+    const fetchState = async () => {
+        try {
+            const state = await syncState({});
+            setAppState(state);
+            const userProfile = state.profiles.find(p => p.username === currentUser);
+            if(userProfile) {
+                setProfileAvatar(userProfile.avatar || null);
+            }
+        } catch (error) {
+            console.error("Failed to sync state", error);
+        }
+    };
+    
+    fetchState();
+    const interval = setInterval(fetchState, 5000); // Poll for updates every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
 
   const handleLogout = () => {
     logout();
@@ -52,6 +79,11 @@ export default function ChatPage() {
       </div>
     );
   }
+
+  const handleStateUpdate = async (updates: Partial<AppState>) => {
+      const newState = await syncState(updates);
+      setAppState(newState);
+  };
 
   return (
     <SidebarProvider>
@@ -70,7 +102,7 @@ export default function ChatPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar>
-                    <AvatarImage src="" alt={currentUser || ''} />
+                    <AvatarImage src={profileAvatar || ""} alt={currentUser || ''} />
                     <AvatarFallback>{currentUser.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -95,7 +127,13 @@ export default function ChatPage() {
           <Sidebar className="w-full md:w-80 lg:w-96 flex-col border-r bg-card/50 p-0" collapsible="offcanvas">
               <SidebarRail>R</SidebarRail>
               <SidebarContent className="p-2">
-                <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
+                <RoomList 
+                    rooms={appState.rooms}
+                    activeRoom={activeRoom} 
+                    onSelectRoom={setActiveRoom} 
+                    onConnectPeer={() => setIsConnectDialogOpen(true)}
+                    onUpdateState={handleStateUpdate}
+                />
               </SidebarContent>
           </Sidebar>
           <main className="flex-1 flex flex-col overflow-hidden">

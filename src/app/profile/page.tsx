@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Edit } from "lucide-react";
+import { syncState } from "@/ai/flows/state-sync-flow";
 
 const profileSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters.").max(50),
@@ -46,14 +47,17 @@ export default function ProfilePage() {
       router.replace("/");
     } else {
       setCurrentUser(user);
-      // Load profile from localStorage
-      const profile = JSON.parse(localStorage.getItem(`profile_${user}`) || "{}");
-      form.reset({
-        username: user,
-        bio: profile.bio || "",
-        isPublic: profile.isPublic === undefined ? true : profile.isPublic,
-      });
-      setAvatar(profile.avatar || null);
+      const loadProfile = async () => {
+        const state = await syncState({});
+        const profile = state.profiles.find(p => p.username === user);
+        form.reset({
+          username: user,
+          bio: profile?.bio || "",
+          isPublic: profile?.isPublic === undefined ? true : profile.isPublic,
+        });
+        setAvatar(profile?.avatar || null);
+      };
+      loadProfile();
     }
   }, [router, form]);
   
@@ -68,7 +72,7 @@ export default function ProfilePage() {
     }
   };
 
-  const onSubmit = (data: ProfileFormValues) => {
+  const onSubmit = async (data: ProfileFormValues) => {
     if (!currentUser) return;
 
     try {
@@ -76,8 +80,7 @@ export default function ProfilePage() {
         ...data,
         avatar: avatar,
       };
-      // In a real P2P app, this would be broadcast to peers. Here, we save to localStorage.
-      localStorage.setItem(`profile_${currentUser}`, JSON.stringify(profileData));
+      await syncState({ profiles: [profileData] });
       toast({
         title: "Profile Updated",
         description: "Your profile has been saved successfully.",
@@ -96,7 +99,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background dark:bg-background">
         <div className="absolute top-4 left-4">
             <Button variant="ghost" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2 h-4 w-4" />

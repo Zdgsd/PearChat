@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarFooter, SidebarContent } from "@/components/ui/sidebar";
+import { AppState } from "@/ai/schemas";
 
 export type Room = {
   id: string;
@@ -30,17 +31,18 @@ export type Room = {
 };
 
 type RoomListProps = {
+  rooms: Room[];
   onSelectRoom: (room: Room) => void;
   activeRoom: Room | null;
   onConnectPeer: () => void;
+  onUpdateState: (updates: Partial<AppState>) => Promise<void>;
 };
 
-export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: RoomListProps) {
-  const [rooms, setRooms] = useState<Room[]>([]);
+export default function RoomList({ rooms, onSelectRoom, activeRoom, onConnectPeer, onUpdateState }: RoomListProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleCreateRoom = (event: React.FormEvent<HTMLFormEvent>) => {
+  const handleCreateRoom = async (event: React.FormEvent<HTMLFormEvent>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const roomName = formData.get("roomName") as string;
@@ -62,7 +64,7 @@ export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: Ro
       type: roomType,
     };
 
-    setRooms([newRoom, ...rooms]);
+    await onUpdateState({ rooms: [newRoom] });
     toast({ title: "Room Created!", description: `"${roomName}" has been created.` });
     setIsCreateDialogOpen(false);
     onSelectRoom(newRoom);
@@ -125,7 +127,7 @@ export default function RoomList({ onSelectRoom, activeRoom, onConnectPeer }: Ro
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Your Rooms</SidebarGroupLabel>
+          <SidebarGroupLabel>Public Rooms</SidebarGroupLabel>
           <SidebarMenu>
             {rooms.length === 0 && (
                 <div className="text-center text-muted-foreground p-4 text-sm">

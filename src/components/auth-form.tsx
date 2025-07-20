@@ -30,6 +30,7 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "./logo";
 import { login, register } from "@/lib/auth";
+import { syncState } from "@/ai/flows/state-sync-flow";
 
 const formSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters.").max(50),
@@ -50,33 +51,35 @@ export default function AuthForm({ mode }: AuthFormProps) {
     defaultValues: { username: "", password: "" },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    setTimeout(() => {
-      try {
-        if (mode === "register") {
-          register(values.username, values.password);
-          toast({ title: "Success", description: "Registration successful. Please log in." });
-          router.push("/");
-        } else { // mode === "login"
-          const success = login(values.username, values.password);
-          if (success) {
-            toast({ title: "Welcome back!" });
-            router.push("/chat");
-          } else {
-            throw new Error("Invalid username or password.");
-          }
-        }
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Failed",
-          description: error.message,
+    try {
+      if (mode === "register") {
+        register(values.username, values.password);
+        // Create a default public profile for the new user
+        await syncState({
+          profiles: [{ username: values.username, isPublic: true, bio: "", avatar: null }],
         });
-      } finally {
-        setIsLoading(false);
+        toast({ title: "Success", description: "Registration successful. Please log in." });
+        router.push("/");
+      } else { // mode === "login"
+        const success = login(values.username, values.password);
+        if (success) {
+          toast({ title: "Welcome back!" });
+          router.push("/chat");
+        } else {
+          throw new Error("Invalid username or password.");
+        }
       }
-    }, 100);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const titles = {
