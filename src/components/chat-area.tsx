@@ -38,7 +38,6 @@ export default function ChatArea({ room }: ChatAreaProps) {
 
   useEffect(() => {
     if (room) {
-      // Load messages from localStorage when room changes
       const storedMessages = localStorage.getItem(`messages_${room.id}`);
       setMessages(storedMessages ? JSON.parse(storedMessages) : []);
     } else {
@@ -47,7 +46,6 @@ export default function ChatArea({ room }: ChatAreaProps) {
   }, [room]);
   
   useEffect(() => {
-      // Scroll to bottom when new messages are added
       if (scrollViewportRef.current) {
           scrollViewportRef.current.scrollTo({ top: scrollViewportRef.current.scrollHeight, behavior: 'smooth' });
       }
@@ -102,7 +100,6 @@ export default function ChatArea({ room }: ChatAreaProps) {
     };
     reader.readAsDataURL(file);
 
-    // Reset file input
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -111,7 +108,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
 
   if (!room) {
     return (
-      <div className="flex flex-col items-center justify-center h-full rounded-lg border-2 border-dashed border-muted bg-card/50 p-8 text-center">
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-transparent">
         <div className="mb-4 flex items-center justify-center rounded-full bg-primary/10 p-4">
            <MessageSquare className="h-12 w-12 text-primary" />
         </div>
@@ -119,15 +116,15 @@ export default function ChatArea({ room }: ChatAreaProps) {
           Select a room to start chatting
         </h2>
         <p className="max-w-md mx-auto mt-2 text-muted-foreground">
-          Join a room or create a new one to begin a secure conversation. Your messages are end-to-end encrypted.
+          Join a room or connect with a peer to begin a secure conversation. Your messages are end-to-end encrypted.
         </p>
       </div>
     );
   }
 
   return (
-      <div className="flex flex-col h-full rounded-lg border bg-card/50">
-          <div className="p-4 border-b flex items-center gap-4 shrink-0">
+      <div className="flex flex-col h-full bg-transparent">
+          <div className="p-4 border-b flex items-center gap-4 shrink-0 bg-card/50 backdrop-blur-sm">
               <Avatar>
                   <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
@@ -151,7 +148,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
                               "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-3 py-2",
                               msg.isMe ? "bg-primary text-primary-foreground" : "bg-muted"
                           )}>
-                              {msg.text && <p className="text-sm">{msg.text}</p>}
+                              {msg.text && <p className="text-sm break-words">{msg.text}</p>}
                               {msg.attachment && (
                                 <div className="space-y-2">
                                   {msg.attachment.type === 'image' ? (
@@ -166,10 +163,10 @@ export default function ChatArea({ room }: ChatAreaProps) {
                                     <a 
                                       href={msg.attachment.url} 
                                       download={msg.attachment.name}
-                                      className="flex items-center gap-2 p-2 rounded-md bg-background/20"
+                                      className="flex items-center gap-2 p-2 rounded-md bg-background/20 hover:bg-background/40 transition-colors"
                                     >
-                                      <FileIcon className="h-6 w-6" />
-                                      <span className="text-sm font-medium">{msg.attachment.name}</span>
+                                      <FileIcon className="h-6 w-6 shrink-0" />
+                                      <span className="text-sm font-medium truncate">{msg.attachment.name}</span>
                                     </a>
                                   )}
                                 </div>
@@ -187,7 +184,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
               </div>
           </ScrollArea>
           
-          <div className="p-4 border-t shrink-0">
+          <div className="p-4 border-t shrink-0 bg-card/50 backdrop-blur-sm">
               <form onSubmit={handleSendMessage} className="relative">
                   <Input 
                     placeholder="Type your message..." 

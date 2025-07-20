@@ -17,7 +17,7 @@ import {
 import { LogOut, UserCircle, Share2 } from "lucide-react";
 import ChatArea from "@/components/chat-area";
 import RoomList, { Room } from "@/components/room-list";
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset, SidebarContent, SidebarRail } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarRail } from "@/components/ui/sidebar";
 import ConnectPeerDialog from "@/components/connect-dialog";
 
 export default function ChatPage() {
@@ -56,7 +56,7 @@ export default function ChatPage() {
   return (
     <SidebarProvider>
       <div className="h-svh w-full flex flex-col bg-background">
-        <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0">
+        <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0 z-10 bg-card/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
               <SidebarTrigger />
               <Share2 className="h-8 w-8 text-primary"/>
@@ -70,7 +70,7 @@ export default function ChatPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar>
-                    <AvatarImage src="" alt={currentUser} />
+                    <AvatarImage src="" alt={currentUser || ''} />
                     <AvatarFallback>{currentUser.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -98,9 +98,9 @@ export default function ChatPage() {
                 <RoomList activeRoom={activeRoom} onSelectRoom={setActiveRoom} onConnectPeer={() => setIsConnectDialogOpen(true)} />
               </SidebarContent>
           </Sidebar>
-          <SidebarInset className="p-4 flex flex-col">
+          <main className="flex-1 flex flex-col overflow-hidden">
              <ChatArea room={activeRoom} />
-          </SidebarInset>
+          </main>
         </div>
       </div>
        <ConnectPeerDialog isOpen={isConnectDialogOpen} onClose={() => setIsConnectDialogOpen(false)} />
