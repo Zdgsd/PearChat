@@ -164,6 +164,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 </Link>
               </p>
             )}
+             {mode === 'admin' && (
+               <p className="text-sm text-muted-foreground">
+                 Not an admin?{' '}
+                 <Link href="/" className="font-semibold text-primary hover:underline">
+                   Go to user login
+                 </Link>
+               </p>
+            )}
           </CardFooter>
         </form>
       </Form>
