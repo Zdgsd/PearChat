@@ -33,7 +33,7 @@ export default function ChatArea({ room }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const currentUser = getCurrentUser() || "You";
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -48,8 +48,8 @@ export default function ChatArea({ room }: ChatAreaProps) {
   
   useEffect(() => {
       // Scroll to bottom when new messages are added
-      if (scrollAreaRef.current) {
-          scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+      if (scrollViewportRef.current) {
+          scrollViewportRef.current.scrollTo({ top: scrollViewportRef.current.scrollHeight, behavior: 'smooth' });
       }
   }, [messages]);
 
@@ -137,8 +137,8 @@ export default function ChatArea({ room }: ChatAreaProps) {
               </div>
           </div>
           
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-              <div className="space-y-4">
+          <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
+              <div className="p-4 space-y-4">
                   {messages.map((msg) => (
                       <div key={msg.id} className={cn("flex items-end gap-2", msg.isMe ? "justify-end" : "justify-start")}>
                           {!msg.isMe && (
